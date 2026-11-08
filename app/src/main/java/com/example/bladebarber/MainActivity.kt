@@ -15,6 +15,8 @@ import com.example.bladebarber.ui.admin.AdminDashboardScreen
 import com.example.bladebarber.ui.auth.ForgotPasswordScreen
 import com.example.bladebarber.ui.auth.LoginScreen
 import com.example.bladebarber.ui.auth.RegisterScreen
+import com.example.bladebarber.ui.barber.BarberDashboardScreen
+import com.example.bladebarber.ui.client.ClientDashboardScreen
 import com.example.bladebarber.ui.theme.BladeBarberTheme
 
 class MainActivity : ComponentActivity() {
@@ -34,16 +36,14 @@ class MainActivity : ComponentActivity() {
                             LoginScreen(
                                 onNavigateRegister = { navController.navigate("register") },
                                 onNavigateForgot = { navController.navigate("forgot") },
-                                onLoginSuccess = { user, pass ->
-                                    if (user.trim().lowercase() == "admin" && pass == "admin") {
-                                        navController.navigate("admin_dashboard") {
-                                            popUpTo("login") { inclusive = true }
-                                        }
-                                    } else {
-                                        // For any other credentials (or client login), navigate to admin dashboard for now as requested
-                                        navController.navigate("admin_dashboard") {
-                                            popUpTo("login") { inclusive = true }
-                                        }
+                                onLoginSuccess = { user, _, profile ->
+                                    val destination = when (profile) {
+                                        "Administrador" -> "admin_dashboard"
+                                        "Barbero" -> "barber_dashboard"
+                                        else -> "client_dashboard"
+                                    }
+                                    navController.navigate("$destination/${android.net.Uri.encode(user.trim())}") {
+                                        popUpTo("login") { inclusive = true }
                                     }
                                 }
                             )
@@ -59,11 +59,31 @@ class MainActivity : ComponentActivity() {
                                 onNavigateLogin = { navController.popBackStack() }
                             )
                         }
-                        composable("admin_dashboard") {
+                        composable("admin_dashboard/{name}") { backStackEntry ->
                             AdminDashboardScreen(
                                 onLogout = {
                                     navController.navigate("login") {
-                                        popUpTo("admin_dashboard") { inclusive = true }
+                                        popUpTo("admin_dashboard/{name}") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+                        composable("barber_dashboard/{name}") { backStackEntry ->
+                            BarberDashboardScreen(
+                                barberName = backStackEntry.arguments?.getString("name")?.ifBlank { "Barbero" } ?: "Barbero",
+                                onLogout = {
+                                    navController.navigate("login") {
+                                        popUpTo("barber_dashboard/{name}") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+                        composable("client_dashboard/{name}") { backStackEntry ->
+                            ClientDashboardScreen(
+                                clientName = backStackEntry.arguments?.getString("name")?.ifBlank { "Usuario" } ?: "Usuario",
+                                onLogout = {
+                                    navController.navigate("login") {
+                                        popUpTo("client_dashboard/{name}") { inclusive = true }
                                     }
                                 }
                             )

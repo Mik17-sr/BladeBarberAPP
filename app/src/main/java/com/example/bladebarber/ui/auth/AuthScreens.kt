@@ -2,6 +2,8 @@ package com.example.bladebarber.ui.auth
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -84,10 +86,11 @@ fun AuthBackground(content: @Composable BoxScope.() -> Unit) {
 fun LoginScreen(
     onNavigateRegister: () -> Unit,
     onNavigateForgot: () -> Unit,
-    onLoginSuccess: (String, String) -> Unit
+    onLoginSuccess: (String, String, String) -> Unit
 ) {
     var usuario by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var selectedProfile by remember { mutableStateOf("Usuario") }
     var passwordVisible by remember { mutableStateOf(false) }
     var loginError by remember { mutableStateOf<String?>(null) }
 
@@ -129,6 +132,38 @@ fun LoginScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    Text("Ingresar como", color = BladeTextSecondary, fontSize = 12.sp, modifier = Modifier.fillMaxWidth())
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("Usuario", "Barbero", "Administrador").forEach { profile ->
+                            val selected = selectedProfile == profile
+                            val icon = when (profile) {
+                                "Barbero" -> Icons.Default.ContentCut
+                                "Administrador" -> Icons.Default.AdminPanelSettings
+                                else -> Icons.Default.Person
+                            }
+                            Surface(
+                                modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { selectedProfile = profile },
+                                color = if (selected) BladeGold.copy(alpha = 0.16f) else BladeDarkBg,
+                                shape = RoundedCornerShape(12.dp),
+                                border = androidx.compose.foundation.BorderStroke(1.dp, if (selected) BladeGold else BladeBorder)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(7.dp)
+                                ) {
+                                    Icon(icon, contentDescription = null, tint = if (selected) BladeGold else BladeTextSecondary, modifier = Modifier.size(17.dp))
+                                    Text(profile, color = if (selected) BladeGold else BladeTextSecondary, fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium)
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     if (loginError != null) {
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
@@ -161,6 +196,8 @@ fun LoginScreen(
                         ),
                         singleLine = true
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -200,7 +237,7 @@ fun LoginScreen(
                                 loginError = "Por favor ingresa usuario y contraseña"
                             } else {
                                 loginError = null
-                                onLoginSuccess(usuario, password)
+                                onLoginSuccess(usuario, password, selectedProfile)
                             }
                         },
                         modifier = Modifier
@@ -603,7 +640,7 @@ fun LoginScreenPreview() {
         LoginScreen(
             onNavigateRegister = {},
             onNavigateForgot = {},
-            onLoginSuccess = { _, _ -> }
+            onLoginSuccess = { _, _, _ -> }
         )
     }
 }
