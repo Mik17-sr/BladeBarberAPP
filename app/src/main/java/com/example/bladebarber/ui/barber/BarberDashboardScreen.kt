@@ -35,7 +35,7 @@ private data class BarberAppointment(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BarberDashboardScreen(
+fun BarberDashboardLegacyScreen(
     barberName: String = "Santiago Barber",
     onLogout: () -> Unit
 ) {
